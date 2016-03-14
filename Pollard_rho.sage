@@ -1,71 +1,22 @@
-import time
-DEBUG = True
-
-listPrimes = [
-	[1319, 659, 5], # ~10 bits
-	[6659, 3329, 5], # ~12 bits
-	[32603, 16301, 3], # ~14 bits
-	[99839, 49919, 4], # ~16 bits
-	[312839, 156419, 4], # ~18 bits
-	[1785803, 892901, 4], # ~20 bits
-	[66999767, 33499883, 4], # ~25 bits
-	[2111297939, 1055648969, 4], # ~30 bits
-	[47260079003, 23630039501, 4] # ~35 bits
-	#[1232673178823, 616336589411, 4], # ~40 bits
-	#[39476820129707, 19738410064853, 4], # ~45 bits
-	#[2073681093605567, 1036840546802783, 4] # ~50 bits
-
-]
-
-""" Tests a set of computed targets.
-    You can remove some, but remember that Pollard_rho gives very different
-    results depending on the target. """
-def tests():
-	targets =[173114611229025298050625,
- 620015254827899774343889,
- 3571738524033324718284324,
- 19983674595088883924731161,
- 50842279960751853178444161,
- 54431372065519868346301284,
- 107817957581486271163822969,
- 235606539908871452207227441
-]
-	for i in range(0, len(targets)):
-		test(targets[i])
-
-def test(target):
-	times = {}
-	for i in range (0, len(listPrimes)):
-		F = GF(listPrimes[i][0])
-		t0 = time.clock()
-		result = Pollard_rho(target, listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
-		timer = time.clock() - t0
-		times[listPrimes[i][0]] = [result, timer]
-		if (DEBUG):
-			print "log(", target, ") = ", result
-			print  "verif :", discrete_log_rho(F(target), F(listPrimes[i][2]))
-			print "[p,q,r] =", listPrimes[i]
-			print "time =", timer
-			print "-------------------------------\n"
-	formatResults(times)
-
-def formatResults(list):
-	sortedList = sorted(list.items(), key=operator.itemgetter(0))
-	print "Bits\t\tTime\t\tResult" 
-	for i in range(0, len(sortedList)):
-		item = sortedList[i]
-		bits = ceil(log_b(item[0],2))
-		time = round(item[1][1],5)
-		print bits, ",\t\t", time, ",\t\t", item[1][0] 
-	print "\n"
-
-def Pollard_rho(target, p, q, g):
+def Pollard_rho2(target, p, q, g):
 	Fq = GF(q)
 	[x, a, b] = [GF(p)(1), Fq(0), Fq(0)]
 	[x2, a2, b2] = [x, a, b] #f(xab, target, p, g)
 
 	# iterative function used for Floyd's cycle detection
 	def walk(x, a, b):
+		if (Mod(x,3) == 0):
+			x *= x
+			a *= 2
+			b *= 2
+		if (Mod(x,3) == 1):
+			x *= target
+			b = b+1
+		if (Mod(x,3) == 2):
+			x *= g
+			a = a+1
+		return [x, a, b]
+	def walk2(x, a, b):
 		if (Mod(x,3) == 0):
 			return [x*x, a*2, b*2]
 		if (Mod(x,3) == 1):
@@ -82,3 +33,73 @@ def Pollard_rho(target, p, q, g):
 				return "failure"
 			result = (a-a2) / r % q
 			return result
+
+def Pollard_rho(public_key, order, generator, modulus, a=0, b=0):
+    """ This is the implementation of the algorithm introduced in
+    the Handbook of Applied Cryptography chapter 3.6.3
+    It is definitely not the latest improvement, 
+    nor the parallelizable version.
+    You need to know the order of the generator to use it
+    """
+    # initialization
+    alpha = generator # to keep the same variables as in the book
+    beta = public_key
+
+    if a != 0 or b != 0: # <- wrong
+        x = Mod(power_mod(alpha, a, modulus) * power_mod(beta, b, modulus), modulus)
+    else:
+        x = Mod(1, modulus)
+
+    x = [x, x]
+    a = Mod(a, order)
+    a = [a, a]
+    b = Mod(b, order)
+    b = [b, b]
+    
+    # iteration function
+    def iteration(x, a, b):
+        if Mod(x, 3) == 1: # x in S_1 (chosen from example)
+            x = beta * x
+            b = b + 1
+
+        elif Mod(x, 3) == 0: # x in S_2
+            x = x * x
+            a = 2 * a
+            b = 2 * b
+
+        else: # x in S_3
+            x = alpha * x
+            a = a + 1
+
+        return x, a, b
+
+    # loop
+    while True:
+        # iteration function
+        x[0], a[0], b[0] = iteration(x[0], a[0], b[0])
+
+        x[1], a[1], b[1] = iteration(x[1], a[1], b[1])
+        x[1], a[1], b[1] = iteration(x[1], a[1], b[1])
+
+        # detect collision
+        if x[0] == x[1]:
+            r = b[0] - b[1]
+            if r != 0:
+                return r^-1 * (a[1] - a[0])
+            else:
+                break
+
+def Pollard(n):
+	x = 2
+	y = 2
+	d = 1
+	def g(x, n):
+		return x**2+1%n
+	while (d == 1):
+		x = g(x, n)
+		y = g(g(y, n), n)
+		d = gcd(abs(x-y),n)
+	if (d == n):
+		return 0
+	else:
+		return d
