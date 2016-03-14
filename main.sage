@@ -1,6 +1,6 @@
 import time
 load("dlog.sage")
-load("Pollard.sage")
+load("Pollard_rho.sage")
 load("Kraitchik.sage")
 DEBUG = True
 VERBOSE = True
