@@ -1,8 +1,9 @@
 import time
+
 load("dlog.sage")
 load("Pollard_rho.sage")
 load("Kraitchik.sage")
-DEBUG = True
+DEBUG = False
 VERBOSE = True
 
 listPrimes = [
@@ -15,14 +16,13 @@ listPrimes = [
 	[66999767, 33499883, 4], # ~25 bits
 	[2111297939, 1055648969, 4], # ~30 bits
 	[47260079003, 23630039501, 4], # ~35 bits
-	[1232673178823, 616336589411, 4] # ~40 bits
-	#[39476820129707, 19738410064853, 4], # ~45 bits
+	[1232673178823, 616336589411, 4], # ~40 bits
+	[39476820129707, 19738410064853, 4] # ~45 bits
 	#[2073681093605567, 1036840546802783, 4] # ~50 bits
-
 ]
 
 # Tests a set of computed targets.
-def tests():
+def tests(algo="Kraitchik", fieldRange=[]):
 	targets =[173114611229025298050625,
  620015254827899774343889,
  3571738524033324718284324,
@@ -33,14 +33,26 @@ def tests():
  235606539908871452207227441
 ]
 	for i in range(0, len(targets)):
-		test(targets[i])
+		test(targets[i], algo, fieldRange)
 
-def test(target):
+def test(target, algo="Kraitchik", fieldRange=[]):
 	times = {}
-	for i in range (0, len(listPrimes)):
+	if fieldRange == []:
+		fieldRange = range (0, len(listPrimes))
+	for i in fieldRange:
 		F = GF(listPrimes[i][0])
 		t0 = time.clock()
-		result = Pollard_rho(F(target), listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
+		if (algo == "bruteforce"):
+			result = bruteforce(F(target), listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
+		elif (algo == "BSGS"):
+			result = BSGS(F(target), listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
+		elif (algo == "Pollard_rho"):
+			result = Pollard_rho(F(target), listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
+		elif (algo == "Kraitchik"):
+			result = Kraitchik(F(target), listPrimes[i][0], listPrimes[i][1], listPrimes[i][2])
+		else:
+			return "Unknown algo"
+
 		timer = time.clock() - t0
 		times[listPrimes[i][0]] = [result, timer]
 		if (VERBOSE):
@@ -59,12 +71,13 @@ def formatResults(list):
 		item = sortedList[i]
 		bits = ceil(log_b(item[0],2))
 		time = round(item[1][1],5)
-		print bits, ",\t\t", time, ",\t\t", item[1][0] 
+		#print bits, ",\t\t", time, ",\t\t", item[1][0] 
+		print time
 	print "\n"
 
-# trouve n cibles (si possible), entre min et max.
-# findTargets(7,2,30) = {3, 4, 9, 12, 16, 25, 27}
 def findTargets(n):
+	"""
+	"""
 	l = set()
 	testedTargets = set()
 	while (len(l) < n):
@@ -86,17 +99,18 @@ def findTargets(n):
 			l.add(testTarget^2)
 	return l
 
-# génère des nombres premiers aléatoire de taille k en base "base"
-def gen(k, base):
+# Generates prime numbers of size k in base 'base'
+def generate(k, base):
 	while (true):
 		r = base^(k-1) + randint(0, base^(k-1))
 		q = next_prime(r)
 		p = 2*q+1
 		if (is_prime(p)):
 			break
+	g = 5
 	while (true):
-		g = GF(p).random_element()
-		if (g^q == 1):
-			break
-	return([p,q,g])
+		if (pow(g, q, p) == 1):
+			return [p,q,g]
+		else:
+			g = g+1
 

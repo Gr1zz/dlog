@@ -1,5 +1,5 @@
 # Literally a bruteforce
-def naive(target, p, q, g):
+def bruteforce(target, p, q, g):
 	h = 1
 	i = 0
 	while (h != target):
@@ -22,5 +22,5 @@ def BSGS(target, p, q, g):
 			return l[y] + i*m % q
 		else:
 			y = y*c % p
-	return "Nothing"
+	return "Failed"
 
