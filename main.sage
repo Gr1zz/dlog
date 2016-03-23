@@ -17,12 +17,27 @@ listPrimes = [
 	[2111297939, 1055648969, 4], # ~30 bits
 	[47260079003, 23630039501, 4], # ~35 bits
 	[1232673178823, 616336589411, 4], # ~40 bits
-	[39476820129707, 19738410064853, 4] # ~45 bits
-	#[2073681093605567, 1036840546802783, 4] # ~50 bits
+	[39476820129707, 19738410064853, 4], # ~45 bits
+	[2073681093605567, 1036840546802783, 4] # ~50 bits
 ]
 
-# Tests a set of computed targets.
+
 def tests(algo="Kraitchik", fieldRange=[]):
+	""" Tests a set of targets.
+	INPUT :
+
+	* "algo" -- can be "Kraitchik" (default), "BSGS", "Pollard_rho" or "bruteforce"
+	* "fieldRange" -- the range of the fields we want to test.
+
+	EXAMPLE :
+
+	sage: tests("Kraitchik")
+
+	sage: tests("BSGS", [2, 11, 4])
+
+	sage: tests("Pollard_rho", range(8,11))
+
+	"""
 	targets =[173114611229025298050625,
  620015254827899774343889,
  3571738524033324718284324,

@@ -1,5 +1,4 @@
 from collections import Counter
-from sage.libs.libecm import ecmfactor
 import random
 
 testSmooth = [435682255480385335523828724249141091727624667875593489604343,
@@ -18,12 +17,27 @@ testSmooth = [435682255480385335523828724249141091727624667875593489604343,
 
 def is_smooth_ecm(n, B):
 	factors = Counter()
+	e = ECM()
+	algoCounter = 2^20
+	nextFactor = 1
 	while not (n == 1):
-		nextFactor = trial_division(n, B)
+		if (algoCounter > 2):
+			nextFactor = trial_division(n, B)
+		else:
+			if (algoCounter == 2):
+				algo = "P-1"
+			elif (algoCounter == 1):
+				algo = "P+1"
+			else:
+				algo = "ECM"
+			nextFactor = e.one_curve(n, B1=B, algorithm=algo)[0]	
 		if (nextFactor > B):
 			return [false]
-		n = n.divide_knowing_divisible_by(nextFactor)
-		factors[nextFactor] += 1
+		if (is_prime(nextFactor)):
+			n = n.divide_knowing_divisible_by(nextFactor)
+			factors[nextFactor] += 1
+		algoCounter -= 1
+			
 	return [true,factors]
 
 def is_smooth_trial(n, B):
@@ -65,13 +79,13 @@ def Kraitchik(target, p, q, g):
 	k = 0
 	while (k < S+1):
 		while (true):
-			a = Fq(random.randrange(min, max))
-			b = Fq(random.randrange(min, max))
+			a = Fq.random_element()#(random.randrange(min, max))
+			b = Fq.random_element()#(random.randrange(min, max))
 			if not (a,b) in row:
 				break
 		# Fast modular exponentiation
 		z = Fp(g)^a*Fp(target)^b
-		isSmooth = is_smooth_trial(ZZ(z), B)
+		isSmooth = is_smooth_ecm(ZZ(z), B)
 		if (isSmooth[0]):
 			row.append((a,b))
 			for p_i in isSmooth[1]:
