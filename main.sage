@@ -27,11 +27,11 @@ def tests(algo="Kraitchik", fieldRange=[]):
 	INPUT :
 
 	* "algo" -- can be "Kraitchik" (default), "BSGS", "Pollard_rho" or "bruteforce"
-	* "fieldRange" -- the range of the fields we want to test.
+	* "fieldRange" -- the range of the fields we want to test. Full field list by default.
 
-	EXAMPLE :
+	EXAMPLES :
 
-	sage: tests("Kraitchik")
+	sage: DEBUG=True; tests("Kraitchik")
 
 	sage: tests("BSGS", [2, 11, 4])
 

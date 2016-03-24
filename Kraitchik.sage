@@ -63,7 +63,13 @@ def is_smooth(n, B):
 	return [true, factors]
 
 def Kraitchik(target, p, q, g):
-	""" 
+	""" Returns the discrete log of target in base g.
+	INPUT :
+
+	* "target" -- the target, e.g a Diffie-Hellman public key
+	* "p" -- the modulus of the group
+	* "q" -- the order of g, belongs to GF(p)
+	* "g" -- a generator of GF(p)
 	"""
 	Fp = GF(p)
 	Fq = GF(q)
@@ -79,8 +85,8 @@ def Kraitchik(target, p, q, g):
 	k = 0
 	while (k < S+1):
 		while (true):
-			a = Fq.random_element()#(random.randrange(min, max))
-			b = Fq.random_element()#(random.randrange(min, max))
+			a = Fq(random.randrange(min, max))
+			b = Fq(random.randrange(min, max))
 			if not (a,b) in row:
 				break
 		# Fast modular exponentiation
@@ -96,5 +102,8 @@ def Kraitchik(target, p, q, g):
 	Z = 1 ; A = 0 ; B = 0
 	for ker_i, row_i in zip(ker, row):
 		A += ker_i*row_i[0]
-		B += ker_i*row_i[1]	
-	return -A*Fq(B**-1)
+		B += ker_i*row_i[1]
+		print "B=", B
+	print ker, row
+	return Fq(B**-1)
+	#return -A*Fq(B**-1)
