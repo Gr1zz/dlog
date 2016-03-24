@@ -85,8 +85,8 @@ def Kraitchik(target, p, q, g):
 	k = 0
 	while (k < S+1):
 		while (true):
-			a = Fq(random.randrange(min, max))
-			b = Fq(random.randrange(min, max))
+			a = Fq.random_element()#(random.randrange(min, max))
+			b = Fq.random_element()#(random.randrange(min, max))
 			if not (a,b) in row:
 				break
 		# Fast modular exponentiation
@@ -103,7 +103,4 @@ def Kraitchik(target, p, q, g):
 	for ker_i, row_i in zip(ker, row):
 		A += ker_i*row_i[0]
 		B += ker_i*row_i[1]
-		print "B=", B
-	print ker, row
-	return Fq(B**-1)
-	#return -A*Fq(B**-1)
+	return -A*Fq(B**-1)
