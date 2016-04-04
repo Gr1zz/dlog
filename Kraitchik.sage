@@ -15,6 +15,15 @@ testSmooth = [435682255480385335523828724249141091727624667875593489604343,
 	28686269421783111864294608644064015953031760727908881675314110
 ]
 
+def foo():
+	pr = 2891930801146326881929718153801226271169371265872941
+	B = ceil(exp(0.5*sqrt(2*log(pr)*log(log(pr)))))
+	t0 = time.time()
+	for i in range(0,10):
+		print i
+		is_smooth_ecm(pr, B)
+	print time.time()-t0
+
 def is_smooth_ecm(n, B):
 	factors = Counter()
 	e = ECM()
@@ -38,11 +47,13 @@ def is_smooth_ecm(n, B):
 		print "#", algoCounter, algo
 		nextFactor = e.one_curve(n, B1=bound, algorithm=algo)[0]
 		print "next = ", nextFactor, "n=", n, "B1=", bound
-		if (nextFactor > B):
-			return [false]
-		if (is_prime(nextFactor)):
-			n = n.divide_knowing_divisible_by(nextFactor)
-			factors[nextFactor] += 1
+		isPrime = is_prime(nextFactor)
+		if (isPrime):
+			if (nextFactor > B):
+				return [false]
+			else:
+				n = n.divide_knowing_divisible_by(nextFactor)
+				factors[nextFactor] += 1
 		else:
 			lastFactors = is_smooth_trial(n, B)
 			if (lastFactors[0]):
@@ -53,7 +64,7 @@ def is_smooth_ecm(n, B):
 			
 	return [true,factors]
 
-def foo():
+def foo2():
 	targets =[173114611229025298050625,
  620015254827899774343889,
  3571738524033324718284324,
@@ -68,7 +79,7 @@ def foo():
 	max = len(targets)
 	e = ECM()
 	for i in range(0, max):
-		e.one_curve(targets[i], B1=2^30)
+		e.one_curve(targets[i], B1=2^30, algorithm="P-1")
 		print i
 	print time.time()-t0
 
