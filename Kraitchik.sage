@@ -18,37 +18,70 @@ testSmooth = [435682255480385335523828724249141091727624667875593489604343,
 def is_smooth_ecm(n, B):
 	factors = Counter()
 	e = ECM()
-	algoCounter = 2^20
 	nextFactor = 1
+	algoCounter = 0
+	bound = 2^20
+	trials = is_smooth_trial(n, bound)
+	firstFactors = trials[1]
+	n = trials[2]
+	print trials
+	print "bound=", bound
+	bound = e.recommended_B1(len(str(n)))
+	print "bound=", bound
 	while not (n == 1):
-		if (algoCounter > 2):
-			nextFactor = trial_division(n, B)
+		if (algoCounter == 0):
+			algo = "P-1"
+		elif (algoCounter == 1):
+			algo = "P+1"
 		else:
-			if (algoCounter == 2):
-				algo = "P-1"
-			elif (algoCounter == 1):
-				algo = "P+1"
-			else:
-				algo = "ECM"
-			nextFactor = e.one_curve(n, B1=B, algorithm=algo)[0]	
+			algo = "ECM"
+		print "#", algoCounter, algo
+		nextFactor = e.one_curve(n, B1=bound, algorithm=algo)[0]
+		print "next = ", nextFactor, "n=", n, "B1=", bound
 		if (nextFactor > B):
 			return [false]
 		if (is_prime(nextFactor)):
 			n = n.divide_knowing_divisible_by(nextFactor)
 			factors[nextFactor] += 1
-		algoCounter -= 1
+		else:
+			lastFactors = is_smooth_trial(n, B)
+			if (lastFactors[0]):
+				factors.update(lastFactors[1])
+			else:
+				return [false]
+		algoCounter += 1
 			
 	return [true,factors]
+
+def foo():
+	targets =[173114611229025298050625,
+ 620015254827899774343889,
+ 3571738524033324718284324,
+ 19983674595088883924731161,
+ 50842279960751853178444161,
+ 54431372065519868346301284,
+ 107817957581486271163822969,
+ 235606539908871452207227441
+]
+	Fq = GF(1036840546802783)
+	t0 = time.time()
+	max = len(targets)
+	e = ECM()
+	for i in range(0, max):
+		e.one_curve(targets[i], B1=2^30)
+		print i
+	print time.time()-t0
 
 def is_smooth_trial(n, B):
 	factors = Counter()
 	while not (n == 1):
 		nextFactor = trial_division(n, B)
 		if (nextFactor > B):
-			return [false]
-		n = n.divide_knowing_divisible_by(nextFactor)
-		factors[nextFactor] += 1
-	return [true,factors]
+			return [false, factors, n]
+		nextFactorPow = valuation(n, nextFactor)
+		n = n.divide_knowing_divisible_by(nextFactor^nextFactorPow)
+		factors[nextFactor] += nextFactorPow
+	return [true,factors, n]
 
 def is_smooth(n, B):
 	""" Naive version of smoothness detection

@@ -47,6 +47,7 @@ def tests(algo="Kraitchik", fieldRange=[]):
  107817957581486271163822969,
  235606539908871452207227441
 ]
+	targets = findTargets(5)
 	for i in range(0, len(targets)):
 		test(targets[i], algo, fieldRange)
 
