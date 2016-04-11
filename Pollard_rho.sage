@@ -11,10 +11,14 @@ def Pollard_rho(target, p, q, g):
 		else:
 			return x*g, a+1, b
 	while (true):
-		x,a,b = walk(x, a, b)
+		#print "xab=", x, a, b
+		x, a, b = walk(x, a, b)
 		x2, a2, b2 = walk(x2, a2, b2)
 		x2, a2, b2 = walk(x2, a2, b2)
+		#print "xab=", x, a, b
+		#print x2, a2, b2
 		if (x == x2):
+			#print "yes=", x, x2
 			r = b2-b
 			if (gcd(r, q) != 1):
 				return "Failure."

@@ -18,9 +18,8 @@ def BSGS(target, p, q, g):
 	c = g^-m % p
 	y = target
 	for i in xrange(0, m):
-		if l.has_key(y):		
+		if l.has_key(y):
 			return l[y] + i*m % q
 		else:
 			y = y*c % p
 	return "Failed"
-

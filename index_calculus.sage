@@ -64,7 +64,7 @@ def is_smooth(n, B):
 		return [false]    
 	return [true, factors]
 
-def Kraitchik(target, p, q, g):
+def index_calculus(target, p, q, g):
 	""" Returns the discrete log of target in base g.
 	INPUT :
 
